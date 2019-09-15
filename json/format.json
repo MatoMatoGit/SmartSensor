@@ -1,0 +1,38 @@
+types:
+- config = 1
+	- device = 1
+
+- event = 2
+	- notification = 1
+	- error = 2
+	- log = 3
+
+- measurement = 3
+	- temperature = 1
+	- light	= 2
+	- moisture = 3
+	- battery = 4
+
+
+{
+	"meta" : {
+		"id" : 123ab89f 
+		"version" : 1,
+		"time"	: "2019-08-05T23:34",
+		"type"		: 1
+		"subtype"	: 1
+	},
+	
+	config data see config.json
+	
+	event data
+	"data" : { 
+		"message"		: "Battery is low."
+	}
+	
+	measurement data
+	"data" : { 
+		"samples"		: [0, 1, 2]
+		"num_samples"	: 3
+	}	
+}
