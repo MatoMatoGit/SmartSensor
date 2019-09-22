@@ -1,0 +1,46 @@
+@startuml
+
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Container.puml
+
+LAYOUT_WITH_LEGEND
+
+title SmartSensor solution container diagram [Key: C4]
+
+Person(user, "Consumer", "Product end user")
+
+System_Boundary(c1, "SmartSensor solution") {
+
+Container(sensor_webapp, "Single-page web application", "HTML", "Interface to configure the SmartSensor for first use.")
+
+Container(sensor, "SmartSensor", "C/Micropython", "Monitors the plant's environment and publishes collected data.")
+
+Container(front_end, "Web application", "Javascript/React.js/Node.js", "Provides insight in the plant's environment /  Provides an interface to change SmartSensor settings")
+
+Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
+
+Container(api, "Web API", "Javascript/Express.js", "Mediates communication between the Web application and SmartSensor.")
+
+Container(mqtt_client, "MQTT Client", "Python", "Converts JSON data received on SmartSensor topics to SQL queries / Publishes configuration changes to SmartSensors ")
+
+ContainerDb(db, "Database", "Oracle Database", "Plant environment and customer data.")
+
+}
+
+' Relationships
+
+Rel_R(user, sensor_webapp, "Configure WiFi connection using / Get sensor ID from", "HTTP")
+Rel(user, sensor, "Observe status / Start synchronization")
+Rel_R(user, front_end, "Configure SmartSensor / View plant environment data", "HTTPS")
+
+Rel_U(sensor, sensor_webapp, "Host / Get configuration from")
+Rel_R(sensor, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
+
+Rel_D(front_end, api, "Get plant environment data from, send configuration change to", "GraphQL")
+
+Rel_R(api, db, "Store data in / Load data from", "SQL")
+
+Rel_U(mqtt_client, mqtt_broker, "Receive data from", "JSON/MQTT")
+
+Rel_L(mqtt_client, db, "Store data in / Load data from", "SQL")
+
+@enduml
