@@ -1,38 +1,54 @@
-types:
+- <type> = <id>
+	- <subtype> = <id>
+
 - config = 1
 	- device = 1
+	- sensors = 2
 
 - event = 2
 	- notification = 1
 	- error = 2
-	- log = 3
 
-- measurement = 3
+- report = 3
 	- temperature = 1
 	- light	= 2
 	- moisture = 3
 	- battery = 4
-
+	- log = 5
+	- status = 6
 
 {
 	"meta" : {
-		"id" : 123ab89f 
-		"version" : 1,
-		"time"	: "2019-08-05T23:34",
-		"type"		: 1
-		"subtype"	: 1
+		"ver"	: 1
+		"id" 	: 123ab89f
+		"dt"	: "2019-08-05T23:34:21",
+		"type"	: 1
+		"sype"	: 1
 	},
 	
-	config data see config.json
-	
-	event data
-	"data" : { 
-		"message"		: "Battery is low."
+	"data" : {
+		<data object> 
 	}
-	
-	measurement data
-	"data" : { 
-		"samples"		: [0, 1, 2]
-		"num_samples"	: 3
-	}	
+}
+
+report data spec
+
+ex 1: light sensor
+"data" : { 
+	"arr"	: [0, 1, 2]
+	"n"		: 3
+}
+
+ex 2: log
+"data" : {
+	"arr"	: ["First sensor contact.", "User changed moisture threshold."]
+	"n"		: 2
+}
+
+event data spec
+
+ex 1: notification (battery low)
+"data" : {
+	"id" 	: 3
+	"msg" 	: "Batterij is bijna leeg." 
 }
