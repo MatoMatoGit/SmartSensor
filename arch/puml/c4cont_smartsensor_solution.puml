@@ -8,34 +8,50 @@ title SmartSensor solution container diagram [Key: C4]
 
 Person(user, "Consumer", "Product end user")
 
+
 System_Boundary(c1, "SmartSensor solution") {
 
-Container(sensor_webapp, "Single-page web application", "HTML", "Interface to configure the SmartSensor for first use.")
+	Boundary(c2, "SmartSensor", "Sub-system") {
+	
+		Container(sensor_webapp, "SmartSensor single-page web application", "C/Micropython/HTML", "Interface to configure the SmartSensor for first use.")
+	
+		ContainerDb(sensor_flash, "File system", "Flash", "Sensor data and configurations")
+	
+		Container(sensor, "SmartSensor main application", "C/Micropython", "Monitors the plant's environment and publishes collected data.")
+	}
 
-Container(sensor, "SmartSensor", "C/Micropython", "Monitors the plant's environment and publishes collected data.")
 
-Container(front_end, "Web application", "Javascript/React.js/Node.js", "Provides insight in the plant's environment /  Provides an interface to change SmartSensor settings")
-
-Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
-
-Container(api, "Web API", "Javascript/Express.js", "Mediates communication between the Web application and SmartSensor.")
-
-Container(mqtt_client, "MQTT Client", "Python", "Converts JSON data received on SmartSensor topics to SQL queries / Publishes configuration changes to SmartSensors ")
-
-ContainerDb(db, "Database", "Oracle Database", "Plant environment and customer data.")
-
+	Boundary(c4, "Back-End", "Sub-system") {
+	
+		Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
+	
+		Container(mqtt_client, "MQTT Client", "Python", "Converts JSON data received on SmartSensor topics to SQL queries / Publishes configuration changes to SmartSensors ")
+	
+		ContainerDb(db, "Database", "Oracle Database", "Plant environment and customer data.")
+	
+	}
+	
+		
+	Boundary(c3, "Front-End", "Sub-system") {
+	
+		Container(webapp, "Web application", "Javascript/React.js/Node.js", "Provides insight in the plant's environment /  Provides an interface to change SmartSensor settings")
+	
+		Container(api, "Web API", "Javascript/Express.js", "Mediates communication between the Web application and SmartSensor.")
+	
+	}
 }
 
 ' Relationships
 
 Rel_R(user, sensor_webapp, "Configure WiFi connection using / Get sensor ID from", "HTTP")
 Rel(user, sensor, "Observe status / Start synchronization")
-Rel_R(user, front_end, "Configure SmartSensor / View plant environment data", "HTTPS")
+Rel_R(user, webapp, "Configure SmartSensor / View plant environment data", "HTTPS")
 
-Rel_U(sensor, sensor_webapp, "Host / Get configuration from")
-Rel_R(sensor, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
+Rel_R(sensor_webapp, sensor_flash, "Store configuration in", "FS")
+Rel_U(sensor, sensor_flash, "Load configuration from", "FS")
+Rel_D(sensor, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
 
-Rel_D(front_end, api, "Get plant environment data from, send configuration change to", "GraphQL")
+Rel(webapp, api, "Get plant environment data from, send configuration change to", "GraphQL")
 
 Rel_R(api, db, "Store data in / Load data from", "SQL")
 
