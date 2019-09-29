@@ -13,11 +13,14 @@ System_Boundary(c1, "SmartSensor solution") {
 
 	Boundary(c2, "SmartSensor", "Sub-system") {
 	
-		Container(sensor_webapp, "SmartSensor single-page web application", "C/Micropython/HTML", "Interface to configure the SmartSensor for first use.")
-	
-		ContainerDb(sensor_flash, "File system", "Flash", "Sensor data and configurations")
-	
-		Container(sensor, "SmartSensor main application", "C/Micropython", "Monitors the plant's environment and publishes collected data.")
+		Container(sensor_webapp, "Single-page web application", "C/Micropython/HTML", "Interface to configure the SmartSensor for first use.")
+		
+		Container(sensor_main, "Main application", "C/Micropython", "Monitors the plant's environment and publishes collected data.")
+		
+		Container(sensor_ota, "OTA Update application", "C/Micropython", "Downloads the latest software and updates the device.")
+		
+		ContainerDb(sensor_flash, "File system", "FAT", "Sensor data and configurations")
+		
 	}
 
 
@@ -25,38 +28,51 @@ System_Boundary(c1, "SmartSensor solution") {
 	
 		Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
 	
-		Container(mqtt_client, "MQTT Client", "Python", "Converts JSON data received on SmartSensor topics to SQL queries / Publishes configuration changes to SmartSensors ")
+		Container(mqtt_client, "MQTT Client", "Python", "Subscribes to SmartSensor topics and stores received data. / Publishes data to SmartSensors.")
+		
+		ContainerDb(mqtt_data, "MQTT data", "ext4", "Files containing JSON data")
+		
+		Container(db_iface, "Database interface", "Python", "Converts JSON data to SQL queries and vice versa.")
 	
-		ContainerDb(db, "Database", "Oracle Database", "Plant environment and customer data.")
+		ContainerDb(db, "Database", "MySQL", "Plant environment and customer data.")
 	
+		Container(api, "Web API", "Javascript/Node.js/Express.js", "Mediates communication between the Web application and the Database.")
+		
 	}
 	
 		
 	Boundary(c3, "Front-End", "Sub-system") {
 	
-		Container(webapp, "Web application", "Javascript/React.js/Node.js", "Provides insight in the plant's environment /  Provides an interface to change SmartSensor settings")
-	
-		Container(api, "Web API", "Javascript/Express.js", "Mediates communication between the Web application and SmartSensor.")
-	
+		Container(webapp, "Web application", "Javascript/React.js", "Provides insight in the plant's environment /  Provides an interface to change SmartSensor settings")	
+		
 	}
 }
+
+System_Ext(e1, "Source host", "Hosts the source code and software releases.")
 
 ' Relationships
 
 Rel_R(user, sensor_webapp, "Configure WiFi connection using / Get sensor ID from", "HTTP")
-Rel(user, sensor, "Observe status / Start synchronization")
+Rel(user, sensor_main, "Observe status / Start synchronization")
 Rel_R(user, webapp, "Configure SmartSensor / View plant environment data", "HTTPS")
 
 Rel_R(sensor_webapp, sensor_flash, "Store configuration in", "FS")
-Rel_U(sensor, sensor_flash, "Load configuration from", "FS")
-Rel_D(sensor, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
+Rel_U(sensor_main, sensor_flash, "Load configuration from", "FS")
+Rel_D(sensor_main, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
+
+Rel(sensor_ota, sensor_flash, "Store update", "FS")
+Rel_R(sensor_ota, e1, "Download update from", "HTTPS")
 
 Rel(webapp, api, "Get plant environment data from, send configuration change to", "GraphQL")
 
-Rel_R(api, db, "Store data in / Load data from", "SQL")
+Rel_D(api, db, "Store data in / Load data from", "SQL")
 
 Rel_U(mqtt_client, mqtt_broker, "Receive data from", "JSON/MQTT")
+Rel(mqtt_client, mqtt_data, "Read / write JSON data")
 
-Rel_L(mqtt_client, db, "Store data in / Load data from", "SQL")
+Rel_R(db_iface, mqtt_data, "Read / write JSON data")
+
+
+Rel_U(db_iface, db, "Store data in / Load data from", "SQL")
 
 @enduml
