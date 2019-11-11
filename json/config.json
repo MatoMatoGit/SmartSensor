@@ -1,57 +1,43 @@
 {
-	"meta" : {
-		"schema"	: 1,
-		"version"	: 1,
-		"timestamp"	: "D2019-08-05T23:34",
-	},
 	
-	"data" {
-	
-		"sw" : {
-			"version"	: 1,
-			"git_hash"	: "a109db10",
-			"timestamp"	: "2019-08-05T22:00",
-		},
-		
-		"status" : {
-			"current"		: "ok",
-			"last_error"	: 2001,
-		},
-		
-		"ap" : {
-			"ssid_prefix"	: "PlantSensor-",
-			"ssid_suffix"	: "",
-			"pw"			: "longpassword",
-			"ip"			: "192.168.0.254",
-		},
-		
-		"led" : {
-			"interval_min"	: 2,
-			"intensity"		: 1023,		
-		},
-		
-		"sensor" : {
-			"interval_min"			: 2,
-			"filter_depth"			: 25,
-			"sample_storage_size"	: 10,
-		},
-		
-		"conn" : {
-			"retry_attempts"		: 5,
-			"retry_interval_sec"	: 2,
-		},
-		
-		"trans" : {
-			"endpoint_url"		: "https://aws.com",
-			"endpoint_port"		: 80,
-			"connect_on_boot"	: true,
-		},
-		
-		"update" : {
-			"interval_hr"		: 24,
-			"check_on_boot"		: true,
-			"endpoint_url"		: "https://matomato-updates.com",
-			"endpoint_port"		: 80
-		},
-	}
+  "data": {
+    "ver": 1,
+    "git": "a109db10",
+    "sha": "a721f949ab93930",
+    "timestamp": "2019-08-05T22:00"
+  },
+
+  "data": {
+      "ssid_prefix"	: "PlantSensor-",
+      "ssid_suffix"	: "",
+      "pw"			: "longpassword",
+      "ip"			: "192.168.0.254"
+  },
+
+  "data": {
+      "interval_min"	: 2,
+      "intensity"		: 1023
+  },
+
+  "data" : {
+      "interval_min"			: 2,
+      "filter_depth"			: 25,
+      "sample_storage_size"	: 10
+  },
+
+  "data" : {
+      "retry_attempts"		: 5,
+      "retry_interval_sec"	: 2
+  },
+
+  "data" : {
+      "endpoint_url"		: "mqtt://192.168.0.108",
+      "endpoint_port"		: 1883
+  },
+
+  "data" : {
+      "interval_hr"		: 24,
+      "check_on_boot"		: true,
+      "topic"             : "/update"
+  }
 }
