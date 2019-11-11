@@ -1,6 +1,6 @@
 @startuml
 
-!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Container.puml
+!include /home/dorus/Programs/plantuml/C4/C4_Container.puml
 
 LAYOUT_WITH_LEGEND
 
