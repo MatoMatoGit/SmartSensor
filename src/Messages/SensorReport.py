@@ -35,3 +35,21 @@ class SensorReportMoist(SensorReport):
     def __init__(self):
         super().__init__(SensorReportMoist.SUBTYPE_MOIST, SensorReportMoist.NAME_MOIST)
 
+
+class SensorReportLight(SensorReport):
+
+    NAME_LIGHT = "light"
+    SUBTYPE_LIGHT = const(3)
+
+    def __init__(self):
+        super().__init__(SensorReportMoist.SUBTYPE_LIGHT, SensorReportMoist.NAME_LIGHT)
+
+
+class SensorReportVBat(SensorReport):
+
+    NAME_VBAT = "vbat"
+    SUBTYPE_VBAT = const(4)
+
+    def __init__(self):
+        super().__init__(SensorReportMoist.SUBTYPE_VBAT, SensorReportMoist.NAME_VBAT)
+
