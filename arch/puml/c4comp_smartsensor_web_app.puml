@@ -1,0 +1,38 @@
+@startuml
+
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Component.puml
+
+LAYOUT_WITH_LEGEND
+
+title SmartSensor Single-page web application component diagram [Key: C4]
+
+Person(user, "Consumer", "Product end user")
+
+ContainerDb(sensor_shared_fs, "Shared file system", "FAT", "Sensor configuration.")
+
+Container_Boundary(sensor_webapp, "Single-page web application") {
+	Component(composer, "Composer", "Service", "Creates component instances, injects dependencies and creates component connections.")
+	
+	Component(log, "Logging", "-", "Provides message logging using files and/or OTA messages.")
+
+	Component(net_con, "Network Connection", "-", "Manages the WLAN connection and credentials storage.")
+	
+	Component(web_srv, "Web Server", "-", "Send the web page to the user. Receives user requests from the web page.")
+	
+	ContainerDb(sensor_int_fs, "Internal file system", "FAT", "Web page, logs.")
+	
+	Rel(net_con, sensor_shared_fs, "Store WLAN credentials")
+
+	Rel(log, sensor_int_fs, "Store/load logging messages")
+	
+	Rel(web_srv, sensor_int_fs, "Load web page from")
+}
+
+
+
+' Relationships
+
+Rel(user, web_srv, "Configure WiFi connection using / Get sensor ID from", "HTTP")
+
+
+@enduml
