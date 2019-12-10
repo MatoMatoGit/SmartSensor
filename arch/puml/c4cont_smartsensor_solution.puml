@@ -1,6 +1,6 @@
 @startuml
 
-!include /home/dorus/Programs/plantuml/C4/C4_Container.puml
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Container.puml
 
 LAYOUT_WITH_LEGEND
 
@@ -19,7 +19,7 @@ System_Boundary(c1, "SmartSensor solution") {
 		
 		Container(sensor_ota, "OTA Update application", "C/Micropython", "Downloads the latest software and updates the device.")
 		
-		ContainerDb(sensor_flash, "File system", "FAT", "Sensor data and configurations")
+		ContainerDb(sensor_shared_fs, "Shared file system", "FAT", "Sensor configuration.")
 		
 	}
 
@@ -56,11 +56,11 @@ Rel_R(user, sensor_webapp, "Configure WiFi connection using / Get sensor ID from
 Rel(user, sensor_main, "Observe status / Start synchronization")
 Rel_R(user, webapp, "Configure SmartSensor / View plant environment data", "HTTPS")
 
-Rel_R(sensor_webapp, sensor_flash, "Store configuration in", "FS")
-Rel_U(sensor_main, sensor_flash, "Load configuration from", "FS")
+Rel_R(sensor_webapp, sensor_shared_fs, "Store configuration in", "FS")
+Rel_U(sensor_main, sensor_shared_fs, "Load configuration from", "FS")
 Rel_D(sensor_main, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
 
-Rel(sensor_ota, sensor_flash, "Store update", "FS")
+Rel(sensor_ota, sensor_shared_fs, "Store update", "FS")
 Rel_R(sensor_ota, e1, "Download update from", "HTTPS")
 
 Rel(webapp, api, "Get plant environment data from, send configuration change to", "GraphQL")

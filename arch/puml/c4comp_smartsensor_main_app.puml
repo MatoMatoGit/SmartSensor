@@ -1,6 +1,6 @@
 @startuml
 
-!include /home/dorus/Programs/plantuml/C4/C4_Container.puml
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Component.puml
 
 LAYOUT_WITH_LEGEND
 
@@ -8,42 +8,47 @@ title SmartSensor Main application component diagram [Key: C4]
 
 Person(user, "Consumer", "Product end user")
 
-ContainerDb(sensor_flash, "File system", "FAT", "Sensor data and configurations")
+ContainerDb(sensor_shared_fs, "Shared file system", "FAT", "Sensor configuration.")
 
 Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
 
 Container_Boundary(sensor_main, "Main application") {
-	Component(notify, "Notification", "Service", "Notifies the user of an event or status by means of an RGB LED and/or OTA message.")
-	Component(data_ex, "Data Exchange", "Service", "Sends produced messages (as JSON) and distributes received messages (as Key-Value pairs) using the MQTT protocol.")
-	Component(time, "System Time", "Service", "Synchronizes the RTC with local time using the NTP protocol.")
-	Component(net_con, "Network Connection", "-", "Manages the WLAN connection and credentials storage.")
+	Component(composer, "Composer", "Service", "Creates component instances, injects dependencies and creates component connections.")
+	Component(sched, "Service Scheduler", "Main loop", "Schedules registered services.")
+	
 	Component(sensors, "Sensors", "Service", "Periodically reads the plant environment sensors and stores the data.")
 	Component(pwr, "Power", "Service", "Monitors the built-in battery. Manages power distribution. Initiates power saving mode.")
 	
-	Component(composer, "Composer", "Service", "Creates component instances, injects dependencies and creates component connections.")
-	Component(sched, "Service Scheduler", "Main loop", "Schedules registered services.")
 	Component(log, "Logging", "-", "Provides message logging using files and/or OTA messages.")
 	
-	Rel(data_ex, sensor_flash, "Store/load to-publish and received data")
+	Component(notify, "Notification", "Service", "Notifies the user of an event or status by means of an RGB LED and/or OTA message.")
+	Component(data_ex, "Data Exchange", "Service", "Sends produced messages (as JSON) and distributes received messages (as Key-Value pairs) using the MQTT protocol.")
+	
+	Component(time, "System Time", "Service", "Synchronizes the RTC with local time using the NTP protocol.")
+	Component(net_con, "Network Connection", "-", "Manages the WLAN connection and credentials storage.")
+
+	ContainerDb(sensor_int_fs, "Internal file system", "FAT", "Sensor data, persistent states, logs.")
+	
+	Rel(data_ex, sensor_int_fs, "Store/load to-publish and received data")
 	Rel(data_ex, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
 	Rel(data_ex, net_con, "Uses")
 	Rel(data_ex, time, "Uses")
 
-	Rel(net_con, sensor_flash, "Load WLAN credentials")
+	Rel(net_con, sensor_shared_fs, "Load WLAN credentials")
 	Rel(net_con, notify, "Update connection status", "Subject")
 	
-	Rel(sensors, sensor_flash, "Store/load sensor data")
+	Rel(sensors, sensor_int_fs, "Store/load sensor data")
 	Rel(sensors, data_ex, "Put sensor data", "Key-Value pairs")
 	Rel(sensors, notify, "Update moisture level", "Subject")
 	
-	Rel(pwr, sensor_flash, "Store/load sleep durations")
+	Rel(pwr, sensor_int_fs, "Store/load sleep durations")
 	Rel(pwr, notify, "Update battery level", "Subject")
 	
 	Rel(time, net_con, "Uses")
 	
 	Rel(notify, data_ex, "Put notification message", "Key-Value pairs")
 	
-	Rel(log, sensor_flash, "Store/load logging messages")
+	Rel(log, sensor_int_fs, "Store/load logging messages")
 	Rel(log, data_ex, "Put logging messages", "Key-Value pairs")
 	Rel(log, notify, "Update error status", "Subject")
 }
@@ -54,10 +59,6 @@ Container_Boundary(sensor_main, "Main application") {
 
 Rel(user, sched, "Wake sensor")
 Rel(user, notify, "Observe status")
-
-
-
-
 
 
 @enduml
