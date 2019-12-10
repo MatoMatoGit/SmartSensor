@@ -66,8 +66,8 @@ class WebApp:
 
         self.Webserver = Webserver(self.Webpage)
 
-        self.Webserver.RegisterQueryHandle('ssid', App.QueryHandleWifiSsid)
-        self.Webserver.RegisterQueryHandle('pwd', App.QueryHandleWifiPwd)
+        self.Webserver.RegisterQueryHandle('ssid', WebApp.QueryHandleWifiSsid)
+        self.Webserver.RegisterQueryHandle('pwd', WebApp.QueryHandleWifiPwd)
 
         self.NetCon.AccessPointStart()
 
@@ -79,13 +79,7 @@ class WebApp:
         return
 
     def Run(self):
-        self.Scheduler.Run(20)
-
-        if self.AppMode is App.MODE_MAIN_APP:
-            self.NetCon.StationSettingsReset()
-            self.MsgEx.Reset()
-            self.TempSensor.SamplesDelete()
-            self.MoistSensor.SamplesDelete()
+        self.Scheduler.Run()
 
     @staticmethod
     def QueryHandleWifiSsid(query, value):
@@ -96,7 +90,7 @@ class WebApp:
     def QueryHandleWifiPwd(query, value):
         print("{}:{}".format(query, value))
         WebApp.Pwd = value
-        WebApp.NetCon.StationSettingsStore(App.Ssid, App.Pwd)
+        WebApp.NetCon.StationSettingsStore(WebApp.Ssid, WebApp.Pwd)
         WebApp.NetCon.AccessPointStop()
         utime.sleep(1)
         machine.reset()
