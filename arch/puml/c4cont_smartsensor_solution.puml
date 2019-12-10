@@ -32,11 +32,11 @@ System_Boundary(c1, "SmartSensor solution") {
 		
 		ContainerDb(mqtt_data, "MQTT data", "ext4", "Files containing JSON data")
 		
-		Container(db_iface, "Database interface", "Python", "Converts JSON data to SQL queries and vice versa.")
+		Container(msg_proc, "Message processor(s)", "Python", "Applies processing to JSON message data and converts to GraphQL queries.")
+		
+		Container(api, "GraphQL API", "Python/Graphene", "Mediates communication between nodes and the Database.")
 	
-		ContainerDb(db, "Database", "MySQL", "Plant environment and customer data.")
-	
-		Container(api, "Web API", "Javascript/Node.js/Express.js", "Mediates communication between the Web application and the Database.")
+		ContainerDb(db, "Database", "MySQL", "Stores plant environment and customer data.")
 		
 	}
 	
@@ -56,23 +56,23 @@ Rel_R(user, sensor_webapp, "Configure WiFi connection using / Get sensor ID from
 Rel(user, sensor_main, "Observe status / Start synchronization")
 Rel_R(user, webapp, "Configure SmartSensor / View plant environment data", "HTTPS")
 
-Rel_R(sensor_webapp, sensor_shared_fs, "Store configuration in", "FS")
-Rel_U(sensor_main, sensor_shared_fs, "Load configuration from", "FS")
+Rel_R(sensor_webapp, sensor_shared_fs, "Store configuration in")
+Rel_U(sensor_main, sensor_shared_fs, "Load configuration from")
 Rel_D(sensor_main, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
 
-Rel(sensor_ota, sensor_shared_fs, "Store update", "FS")
-Rel_R(sensor_ota, e1, "Download update from", "HTTPS")
+Rel(sensor_ota, sensor_shared_fs, "Store update")
+Rel_R(sensor_ota, e1, "Download update from", "CoAP*")
 
-Rel(webapp, api, "Get plant environment data from, send configuration change to", "GraphQL")
+Rel(webapp, api, "Get plant environment data from, send configuration change to", "HTTPS/GraphQL")
 
-Rel_D(api, db, "Store data in / Load data from", "SQL")
+Rel_D(api, db, "Store data in / Load data from", "HTTPS/SQL")
 
 Rel_U(mqtt_client, mqtt_broker, "Receive data from", "JSON/MQTT")
 Rel(mqtt_client, mqtt_data, "Read / write JSON data")
 
-Rel_R(db_iface, mqtt_data, "Read / write JSON data")
+Rel_R(msg_proc, mqtt_data, "Read / write JSON data")
 
 
-Rel_U(db_iface, db, "Store data in / Load data from", "SQL")
+Rel_D(msg_proc, api, "Store data in / Load data from", "HTTPS/GraphQL")
 
 @enduml
