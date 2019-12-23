@@ -2,8 +2,13 @@ import DummySensor
 from upyiot.system.ExtLogging import ExtLogging
 from upyiot.system.SystemTime.SystemTime import SystemTime
 from upyiot.system.Service.ServiceScheduler import ServiceScheduler
+from upyiot.system.Service.ServiceScheduler import Service
 from upyiot.comm.NetCon.NetCon import NetCon
 from upyiot.comm.Web.Webserver import Webserver
+from upyiot.drivers.Led.Led import Led
+
+# SmartSensor modules
+from Config.Hardware import Pins
 
 # Other
 import network
@@ -27,7 +32,7 @@ class WebApp:
     Time = None
     NetCon = None
 
-    WebserverInterval   = const(2)
+    WebserverInterval   = const(1)
     WebpageTitle = "SmartSensor - WiFi instellingen"
 
     Webpage = """<html><head>
@@ -61,6 +66,11 @@ class WebApp:
         self.Scheduler = ServiceScheduler()
 
     def Setup(self):
+        # Create LED driver instances.
+        self.LedRed = Led(Pins.CFG_HW_PIN_LED_RED)
+        self.LedGreen = Led(Pins.CFG_HW_PIN_LED_GREEN)
+        self.LedBlue = Led(Pins.CFG_HW_PIN_LED_BLUE)
+
         wlan_ap = WLAN(network.AP_IF)
         self.NetCon.WlanInterface(wlan_ap, NetCon.MODE_ACCESS_POINT)
 
@@ -69,8 +79,9 @@ class WebApp:
         self.Webserver.RegisterQueryHandle('ssid', WebApp.QueryHandleWifiSsid)
         self.Webserver.RegisterQueryHandle('pwd', WebApp.QueryHandleWifiPwd)
 
-        self.NetCon.AccessPointStart()
+        self.Webserver.SvcDependencies({self.NetCon: Service.DEP_TYPE_RUN_ALWAYS_BEFORE_INIT})
 
+        self.Scheduler.ServiceRegister(self.NetCon)
         self.Scheduler.ServiceRegister(self.Webserver)
 
         self.Webserver.SvcIntervalSet(self.WebserverInterval)
@@ -85,11 +96,18 @@ class WebApp:
     def QueryHandleWifiSsid(query, value):
         print("{}:{}".format(query, value))
         WebApp.Ssid = value
+        if WebApp.Pwd is not None:
+            WebApp.SaveAndReset()
 
     @staticmethod
     def QueryHandleWifiPwd(query, value):
         print("{}:{}".format(query, value))
         WebApp.Pwd = value
+        if WebApp.Ssid is not None:
+            WebApp.SaveAndReset()
+
+    @staticmethod
+    def SaveAndReset():
         WebApp.NetCon.StationSettingsStore(WebApp.Ssid, WebApp.Pwd)
         WebApp.NetCon.AccessPointStop()
         utime.sleep(1)
