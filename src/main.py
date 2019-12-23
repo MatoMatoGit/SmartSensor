@@ -9,8 +9,10 @@ import ubinascii
 import utime
 
 
-ApCfg = {"ssid": "SmartSensor-" + ID, "pwd": "mato", "ip": "192.168.0.200"}
+ID = str(ubinascii.hexlify(machine.unique_id()).decode('utf-8'))
 DIR = "./"
+ApCfg = {"ssid": "SmartSensor-" + ID, "pwd": "mato", "ip": "192.168.0.200"}
+
 
 if __name__ == '__main__':
 
