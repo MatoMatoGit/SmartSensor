@@ -21,6 +21,6 @@ CFG_HW_PIN_BAT_STAT             = const(19)
 
 CFG_HW_PIN_VBAT_MEAS_EN         = const(2)
 
-CFG_HW_PIN_VBAT_MEAS            = const(4)
+CFG_HW_PIN_VBAT_MEAS            = const(4)  # TODO: Change to 35 in HW V1.1
 
 
