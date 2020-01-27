@@ -1,0 +1,30 @@
+@startuml
+
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Context.puml
+
+LAYOUT_TOP_DOWN
+LAYOUT_WITH_LEGEND
+
+title SmartSensor solution context diagram [Key: C4]
+
+
+Person(user, "Consumer", "Product end user")
+
+Enterprise_Boundary(c0, "SmartSensor solution") {
+	System(sensor, "SmartSensor", "Measures plant environment, sends data to backend")
+	
+	System(backend, "Backend", "Processes, stores and provides data")
+	
+	System(frontend, "Web application", "Provides insight in plant environment, manage sensor settings")
+	
+}
+
+Rel(user, sensor, "Configure sensor, observe status")
+
+Rel(sensor, backend, "Send data", "MQTT")
+
+Rel(frontend, backend, "Request data", "HTTPS")
+
+Rel(user, frontend, "Configure sensor, observe data in web-app")
+
+@enduml

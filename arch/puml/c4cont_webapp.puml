@@ -1,0 +1,28 @@
+@startuml
+
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Container.puml
+
+LAYOUT_TOP_DOWN
+LAYOUT_WITH_LEGEND
+
+title Web Application container diagram [Key: C4]
+
+Person(user, "Consumer", "Product end user")
+
+
+System_Boundary(c1, "Web Application") {
+	
+	Container(webapp, "Web application", "Javascript/React.js", "Provides insight in the plant's environment /  Provides an interface to change SmartSensor settings")	
+		
+}
+
+System_Ext(backend, "Backend", "Processes, stores and provides data.")
+
+' Relationships
+
+Rel_R(user, webapp, "Configure SmartSensor / View plant environment data", "HTTPS")
+
+Rel(webapp, backend, "Get plant environment data from, send configuration change to", "HTTPS/GraphQL")
+
+
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Container.puml
+
+LAYOUT_TOP_DOWN
+LAYOUT_WITH_LEGEND
+
+title SmartSensor container diagram [Key: C4]
+
+Person(user, "Consumer", "Product end user")
+
+
+System_Boundary(c1, "SmartSensor") {
+
+	
+	Container(sensor_webapp, "Single-page web application", "C/Micropython/HTML", "Interface to configure the SmartSensor for first use.")
+	
+	Container(sensor_main, "Main application", "C/Micropython", "Monitors the plant's environment and publishes collected data.")
+	
+	ContainerDb(sensor_shared_fs, "Shared file system", "FAT", "Sensor configuration.")
+		
+}
+
+System_Ext(backend, "Backend", "Processes, stores and provides data.")
+
+' Relationships
+
+Rel_R(user, sensor_webapp, "Configure WiFi connection using / Get sensor ID from", "HTTP")
+Rel(user, sensor_main, "Observe status / Start synchronization")
+
+Rel_R(sensor_webapp, sensor_shared_fs, "Store configuration in")
+Rel_U(sensor_main, sensor_shared_fs, "Load configuration from")
+Rel_D(sensor_main, backend, "Send plant environment data to, get configuration from", "JSON/MQTT")
+
+
+@enduml

@@ -13,44 +13,42 @@ ContainerDb(sensor_shared_fs, "Shared file system", "FAT", "Sensor configuration
 Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
 
 Container_Boundary(sensor_main, "Main application") {
+	Component(ui, "User Interface", "Service", "Captures button presses, notifies user visually and over web")
+	 
 	Component(composer, "Composer", "Service", "Creates component instances, injects dependencies and creates component connections.")
 	Component(sched, "Service Scheduler", "Main loop", "Schedules registered services.")
 	
 	Component(sensors, "Sensors", "Service", "Periodically reads the plant environment sensors and stores the data.")
-	Component(pwr, "Power", "Service", "Monitors the built-in battery. Manages power distribution. Initiates power saving mode.")
 	
-	Component(log, "Logging", "-", "Provides message logging using files and/or OTA messages.")
+	Component(log, "Logging", "-", "Provides message logging using files and/or messages.")
 	
-	Component(notify, "Notification", "Service", "Notifies the user of an event or status by means of an RGB LED and/or OTA message.")
-	Component(data_ex, "Data Exchange", "Service", "Sends produced messages (as JSON) and distributes received messages (as Key-Value pairs) using the MQTT protocol.")
+	Component(msg_ex, "Message Exchange", "Service", "Sends produced messages (as JSON) and distributes received messages (as Key-Value pairs) using the MQTT protocol.")
 	
 	Component(time, "System Time", "Service", "Synchronizes the RTC with local time using the NTP protocol.")
-	Component(net_con, "Network Connection", "-", "Manages the WLAN connection and credentials storage.")
+	Component(net_con, "Network Connection", "Service", "Manages the WLAN connection and credentials storage.")
 
 	ContainerDb(sensor_int_fs, "Internal file system", "FAT", "Sensor data, persistent states, logs.")
 	
-	Rel(data_ex, sensor_int_fs, "Store/load to-publish and received data")
-	Rel(data_ex, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
-	Rel(data_ex, net_con, "Uses")
-	Rel(data_ex, time, "Uses")
+	Rel(msg_ex, sensor_int_fs, "Store/load to-publish and received data")
+	Rel_R(msg_ex, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
+	Rel(msg_ex, net_con, "Uses")
+	Rel(msg_ex, time, "Uses")
 
 	Rel(net_con, sensor_shared_fs, "Load WLAN credentials")
-	Rel(net_con, notify, "Update connection status", "Subject")
+	Rel(net_con, ui, "Update connection status", "Subject")
 	
 	Rel(sensors, sensor_int_fs, "Store/load sensor data")
-	Rel(sensors, data_ex, "Put sensor data", "Key-Value pairs")
-	Rel(sensors, notify, "Update moisture level", "Subject")
-	
-	Rel(pwr, sensor_int_fs, "Store/load sleep durations")
-	Rel(pwr, notify, "Update battery level", "Subject")
-	
+	Rel(sensors, msg_ex, "Put sensor data", "Key-Value pairs")
+	Rel(sensors, ui, "Update moisture level", "Subject")
+		
 	Rel(time, net_con, "Uses")
 	
-	Rel(notify, data_ex, "Put notification message", "Key-Value pairs")
+	Rel(ui, msg_ex, "Put notification message", "Key-Value pairs")
 	
 	Rel(log, sensor_int_fs, "Store/load logging messages")
-	Rel(log, data_ex, "Put logging messages", "Key-Value pairs")
-	Rel(log, notify, "Update error status", "Subject")
+	Rel(log, msg_ex, "Put logging messages", "Key-Value pairs")
+	
+	Rel(composer, sensor_shared_fs, "Load sensor configuration")
 }
 
 
@@ -58,7 +56,7 @@ Container_Boundary(sensor_main, "Main application") {
 ' Relationships
 
 Rel(user, sched, "Wake sensor")
-Rel(user, notify, "Observe status")
+Rel(user, ui, "Observe status")
 
 
 @enduml

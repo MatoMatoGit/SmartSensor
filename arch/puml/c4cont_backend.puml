@@ -1,0 +1,44 @@
+@startuml
+
+!include /home/dorspi/Documents/PlantUML/C4-PlantUML/C4_Container.puml
+
+LAYOUT_TOP_DOWN
+LAYOUT_WITH_LEGEND
+
+title Backend container diagram [Key: C4]
+
+System_Boundary(c1, "Backend") {
+	
+	Container(mqtt_broker, "Mosquitto MQTT broker", "C", "Receive published messages on topics / Send messages to topic subscribers.")
+
+	Container(mqtt_client, "MQTT Client", "Python", "Subscribes to SmartSensor topics and stores received data. / Publishes data to SmartSensors.")
+	
+	ContainerDb(mqtt_data, "MQTT data", "ext4", "Files containing JSON data")
+	
+	Container(msg_proc, "Message processor(s)", "Python", "Applies processing to JSON message data and converts to GraphQL queries.")
+	
+	Container(api, "GraphQL API", "Python/Graphene", "Mediates communication between nodes and the Database.")
+
+	ContainerDb(db, "Database", "MySQL", "Stores plant environment and customer data.")
+
+}
+
+System_Ext(sensor, "SmartSensor", "Measures plant environment, sends data to backend")
+System_Ext(webapp, "Web application", "Provides insight in plant environment, manage sensor settings")
+
+' Relationships
+
+Rel_D(sensor, mqtt_broker, "Send plant environment data to, get configuration from", "JSON/MQTT")
+
+Rel(webapp, api, "Get plant environment data from, send configuration change to", "HTTPS/GraphQL")
+
+Rel_D(api, db, "Store data in / Load data from", "HTTPS/SQL")
+
+Rel_U(mqtt_client, mqtt_broker, "Receive data from", "JSON/MQTT")
+Rel(mqtt_client, mqtt_data, "Read / write JSON data")
+
+Rel_D(msg_proc, mqtt_data, "Read / write JSON data")
+
+Rel_D(msg_proc, api, "Store data in / Load data from", "HTTPS/GraphQL")
+
+@enduml
