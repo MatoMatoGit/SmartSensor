@@ -5,31 +5,22 @@ from micropython import const
 class UserButton:
 
     REST_TIME_MS = const(500)
+    HOLD_TIMES = (1000, 5000, 10000)
 
     def __init__(self, btn_pin_nr):
-        self.ButtonCbs = (self._ButtonPressed, self._ButtonReleased, self._ButtonHold)
-        self.Button = TactSwitch(btn_pin_nr, self.ButtonCbs, 2000, True)
-        self.RestTimer = Timer(-1)
-        self.PressCount = 0
-        return
-
-    def _ButtonPressed(self, cb_type):
-        self.RestTimer.init(period=UserButton.REST_TIME_MS,
-                            mode=Timer.ONE_SHOT,
-                            callback=UserButton._ButtonRest)
-        return
-
-    def _ButtonReleased(self, cb_type):
-        self.RestTimer.deinit()
-        self.PressCount += 1
+        self.ButtonCbs = (self._ButtonPressed, self._ButtonReleased, self._ButtonRest)
+        self.Button = TactSwitch(btn_pin_nr, (0, -1), self.ButtonCbs,
+                                 self.HOLD_TIMES, self.REST_TIME_MS)
         return
 
     @staticmethod
-    def _ButtonHold(cb_type):
-
+    def _ButtonPressed(press_count):
         return
 
     @staticmethod
-    def _ButtonRest():
-        UserButton.PressCount = 0
+    def _ButtonReleased(hold_idx):
+        return
+
+    @staticmethod
+    def _ButtonRest(press_count):
         return
