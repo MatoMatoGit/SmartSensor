@@ -29,7 +29,7 @@ class Notification(Observer):
         """
 
         :param val_threshold_range: Range object with min and max threshold values.
-        :param color_map_params: Dictionary containing a Range object as value for each
+        :param color_map_params: Dictionary containing a Range object value for each
         RGB_COLOR_* key.
         :param prio: Notification priority. If multiple notifications are active, the highest
         priority is shown first.
@@ -67,7 +67,8 @@ class Notifyer(NotifiyerService):
 
     def SvcRun(self):
 
-        # Add activated notifications to the ActiveNotifications list.
+        # Add activated notifications to the ActiveNotifications list if it is
+        # not in that list.
         for notif in self.Notifications:
             if notif.Active is True and notif not in self.ActiveNotifications:
                 self.ActiveNotifications.append(notif)
