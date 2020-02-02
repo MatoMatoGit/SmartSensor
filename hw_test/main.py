@@ -10,7 +10,7 @@ from UserInterface.Notification import NotificationRange
 from UserInterface.Notification import Notification
 
 hold_times = (1000, 5000, 10000)
-
+timers = (0, -1)
 
 def raw_temp_to_celsius(raw_temp):
     cel_temp = raw_temp * (2.5 / 1024)
@@ -19,8 +19,8 @@ def raw_temp_to_celsius(raw_temp):
     return cel_temp
 
 
-def callback_pressed(hold_idx):
-    print("Pressed")
+def callback_pressed(press_count):
+    print("Pressed: {}".format(press_count))
 
 
 def callback_released(hold_idx):
@@ -29,23 +29,19 @@ def callback_released(hold_idx):
         print("Held for {} ms".format(hold_times[hold_idx]))
 
 
+def callback_rest(press_count):
+    print("Rest. Pressed {} times".format(press_count))
+
+
 def main():
-    sw_callbacks = (callback_pressed, callback_released)
+    sw_callbacks = (callback_pressed, callback_released, callback_rest)
 
     vsensor = Pin(0, Pin.OUT)
     temp = Mcp9700Temp(32)
     moist = CapMoisture(34, 0)
     light = PhTLight(33)
-    sw = TactSwitch(27, sw_callbacks, hold_times)
+    sw = TactSwitch(27, timers, sw_callbacks, hold_times, 500)
     rgb_led = RgbLed(21, 23, 22)
-    notifyer = Notifyer(rgb_led)
-
-    th_range = NotificationRange(1500, 10000)
-    color_map = {RgbLed.RGB_COLOR_RED: NotificationRange(10000, 1500),
-                 RgbLed.RGB_COLOR_BLUE: NotificationRange(1500, 10000)}
-    notif = Notification(th_range, color_map, 5, 3)
-
-    notifyer.NotificationRegister(notif)
 
     sw.Enable()
 
@@ -67,11 +63,8 @@ def main():
 
         print("Moist: {} | Temp: {}C | Light: {}".format(moist_val, temp_val, light_val))
 
-        notif.Update(moist_val)
-        notifyer.SvcRun()
 
         time.sleep(2)
-
 
 
 if __name__ == '__main__':
