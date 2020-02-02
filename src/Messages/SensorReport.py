@@ -6,7 +6,7 @@ class SensorReport(MessageSpecification):
 
     TYPE_SENSOR_REPORT        = const(0)
     BASE_URL_SENSOR_REPORT         = "<pn>/<id>/"
-    DATA_KEY_SENSOR_REPORT_SAMPLES  = "smp"
+    DATA_KEY_SENSOR_REPORT_SAMPLES  = "S"
     DIRECTION_SENSOR_REPORT   = MessageSpecification.MSG_DIRECTION_SEND
 
     def __init__(self, subtype, url_suffix):
@@ -42,14 +42,5 @@ class SensorReportLight(SensorReport):
     SUBTYPE_LIGHT = const(3)
 
     def __init__(self):
-        super().__init__(SensorReportMoist.SUBTYPE_LIGHT, SensorReportMoist.NAME_LIGHT)
-
-
-class SensorReportVBat(SensorReport):
-
-    NAME_VBAT = "vbat"
-    SUBTYPE_VBAT = const(4)
-
-    def __init__(self):
-        super().__init__(SensorReportMoist.SUBTYPE_VBAT, SensorReportMoist.NAME_VBAT)
+        super().__init__(SensorReportLight.SUBTYPE_LIGHT, SensorReportLight.NAME_LIGHT)
 
