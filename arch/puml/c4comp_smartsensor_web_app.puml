@@ -15,9 +15,9 @@ Container_Boundary(sensor_webapp, "Single-page web application") {
 	
 	Component(log, "Logging", "-", "Provides message logging using files and/or OTA messages.")
 
-	Component(net_con, "Network Connection", "-", "Manages the WLAN connection and credentials storage.")
+	Component(net_con, "Network Connection", "Service", "Manages the WLAN connection and credentials storage.")
 	
-	Component(web_srv, "Web Server", "-", "Send the web page to the user. Receives user requests from the web page.")
+	Component(web_srv, "Web Server", "Service", "Send the web page to the user. Receives user requests from the web page.")
 	
 	ContainerDb(sensor_int_fs, "Internal file system", "FAT", "Web page, logs.")
 	
