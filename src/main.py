@@ -1,4 +1,4 @@
-from MainApp.MainApp import MainApp
+from DemoApp.DemoApp import DemoApp
 from WebApp.WebApp import WebApp
 from upyiot.comm.NetCon.NetCon import NetCon
 
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     if netcon.StationSettingsAreSet():
         print("[App] Found station settings.")
         print("[App] Booting Main App.")
-        app = MainApp(netcon)
+        app = DemoApp(netcon)
     else:
         print("[App] No station settings.")
         print("[App] Booting Web App.")
