@@ -44,3 +44,20 @@ class SensorReportLight(SensorReport):
     def __init__(self):
         super().__init__(SensorReportLight.SUBTYPE_LIGHT, SensorReportLight.NAME_LIGHT)
 
+
+class SensorReportMoistCalibLow(SensorReport):
+    SUBTYPE_MOIST_CALIB_LOW = const(4)
+    NAME_MOIST_CALIB_LOW = "moist_cal_l"
+
+    def __init__(self):
+        super().__init__(SensorReportMoistCalibLow.SUBTYPE_MOIST_CALIB_LOW,
+                         SensorReportMoistCalibLow.NAME_MOIST_CALIB_LOW)
+
+
+class SensorReportMoistCalibHigh(SensorReport):
+    SUBTYPE_MOIST_CALIB_HIGH = const(5)
+    NAME_MOIST_CALIB_HIGH = "moist_cal_h"
+
+    def __init__(self):
+        super().__init__(SensorReportMoistCalibHigh.SUBTYPE_MOIST_CALIB_HIGH,
+                         SensorReportMoistCalibHigh.NAME_MOIST_CALIB_HIGH)
