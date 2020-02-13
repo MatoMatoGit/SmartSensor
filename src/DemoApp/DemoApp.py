@@ -5,12 +5,15 @@ from upyiot.system.SystemTime.SystemTime import SystemTime
 from upyiot.system.Service.ServiceScheduler import ServiceScheduler
 from upyiot.system.Service.ServiceScheduler import Service
 from upyiot.system.Util import ResetReason
+
+from upyiot.middleware.SubjectObserver.SubjectObserver import Observer
+from upyiot.middleware.Sensor import Sensor
+
 from upyiot.comm.NetCon.NetCon import NetCon
 from upyiot.comm.Messaging.MessageExchange import MessageExchange
 from upyiot.comm.Messaging.MessageExchange import Endpoint
 from upyiot.comm.Messaging.MessageSpecification import MessageSpecification
 from upyiot.comm.Messaging.MessageFormatAdapter import MessageFormatAdapter
-from upyiot.middleware.Sensor import Sensor
 
 from upyiot.drivers.Board.Supply import Supply
 from upyiot.drivers.Sensors.CapMoisture import CapMoisture
@@ -43,13 +46,23 @@ import utime
 BROKER_IP_PC = '192.168.0.103'
 BROKER_IP_PI = '192.168.0.111'
 
+
+class CalibrationObserver(Observer):
+
+    def __init__(self):
+        self.CalibValue = 0
+
+    def Update(self, value):
+        self.CalibValue = value
+
+
 class DemoApp:
 
     PRODUCT_NAME = "smartsensor"
     DIR = "./"
     ID = str(ubinascii.hexlify(machine.unique_id()).decode('utf-8'))
     RETRIES = 3
-    BROKER = BROKER_IP_PC
+    BROKER = BROKER_IP_PI
     PORT = 1883
     FILTER_DEPTH = const(6)
     DEEPSLEEP_THRESHOLD_SEC = const(5)
@@ -59,7 +72,7 @@ class DemoApp:
     MOIST_NOTIF_TIME = const(1)
     MOIST_NOTIF_PRIO = const(5)
 
-    SUPPLY_SETTLE_TIME_MS = const(100)
+    SUPPLY_SETTLE_TIME_MS = const(50)
 
     NetCon = None
     UrlFields = {MessageSpecification.URL_FIELD_DEVICE_ID: ID,
@@ -92,6 +105,13 @@ class DemoApp:
         DemoApp.NetCon = netcon_obj
 
     def Setup(self):
+
+        # self.EnMoist = Supply(Pins.CFG_HW_PIN_MOIST_EN, self.SUPPLY_SETTLE_TIME_MS)
+        # self.VTemp = Supply(Pins.CFG_HW_PIN_TEMP_EN, self.SUPPLY_SETTLE_TIME_MS)
+        # self.VLdr = Supply(Pins.CFG_HW_PIN_LDR_EN, self.SUPPLY_SETTLE_TIME_MS)
+
+        # self.Ap2112 = Supply(Pins.CFG_HW_PIN_HI_PWR_EN, DemoApp.SUPPLY_SETTLE_TIME_MS)
+        # self.Ap2112.Enable()
 
         rst_reason = ResetReason.ResetReason()
         print("[Setup] Reset reason: {}".format(ResetReason.ResetReasonToString(rst_reason)))
@@ -191,13 +211,17 @@ class DemoApp:
         self.MsgEx.RegisterMessageType(self.MoistCalibHighMsgSpec)
         self.MsgEx.RegisterMessageType(self.LogMsgSpec)
 
-        # Create observer for the low calibration.
-        self.MoistObserver = self.MoistCalibLowAdapt.CreateObserver(
+        self.CalibObserver = CalibrationObserver()
+
+        self.CalibLowStream = self.MoistCalibLowAdapt.CreateStream(
             SensorReportMoistCalibLow.DATA_KEY_SENSOR_REPORT_SAMPLES,
+            self.SamplesPerMessage)
+        self.CalibHighStream = self.MoistCalibHighAdapt.CreateStream(
+            SensorReportMoistCalibHigh.DATA_KEY_SENSOR_REPORT_SAMPLES,
             self.SamplesPerMessage)
 
         # Link the observers to the sensors.
-        self.MoistSensor.ObserverAttachNewSample(self.MoistObserver)
+        self.MoistSensor.ObserverAttachNewSample(self.CalibObserver)
 
         # Create a stream for the log messages.
         self.LogStream = self.LogAdapt.CreateStream(LogMessage.DATA_KEY_LOG_MSG,
@@ -337,11 +361,17 @@ class DemoApp:
 
     def RunCalibMode(self):
         while DemoApp.CalibState is not DemoApp.CALIB_STATE_SET_SYNC:
-            self.Scheduler.Run(10)
+            if DemoApp.CalibState is DemoApp.CALIB_STATE_SET_LOW:
+                self.RgbLed.Red.On()
+            elif DemoApp.CalibState is DemoApp.CALIB_STATE_SET_HIGH:
+                self.RgbLed.Red.Off()
+                self.RgbLed.Blue.On()
+            self.Scheduler.Run(5)
 
         self.MoistSensor.SvcDisable()
         self.MsgEx.SvcActivate()
 
+        self.RgbLed.Blue.Off()
         self.Scheduler.Run(15)
         self.Scheduler.RequestDeepSleep(0)
 
@@ -353,7 +383,9 @@ class DemoApp:
         self.NetCon.StationSettingsReset()
 
     def ButtonPressed(self, *args):
-        self.RgbLed.Green.On()
+        if DemoApp.StartApp is False:
+            self.RgbLed.Green.On()
+        return
 
     def ButtonRelease(self, *args):
         if DemoApp.StartApp is False:
@@ -373,22 +405,15 @@ class DemoApp:
         elif DemoApp.StartApp is True and DemoApp.Mode is DemoApp.APP_MODE_CALIBRATION:
 
             if DemoApp.CalibState is DemoApp.CALIB_STATE_SET_LOW:
-                self.RgbLed.Red.Off()
+                calib_value = self.CalibObserver.CalibValue
+                self.CalibLowStream.write(calib_value)
                 DemoApp.CalibState = DemoApp.CALIB_STATE_SET_HIGH
                 print("[App] Setting low calibration value")
-                self.RgbLed.Blue.On()
 
             elif DemoApp.CalibState is DemoApp.CALIB_STATE_SET_HIGH:
-                self.RgbLed.Blue.Off()
+                calib_value = self.CalibObserver.CalibValue
+                self.CalibHighStream.write(calib_value)
                 DemoApp.CalibState = DemoApp.CALIB_STATE_SET_SYNC
                 print("[App] Setting high calibration value")
 
             return
-            # if calib_low:
-            #     self.Calibration.SvcActivate()
-            # else:
-            #     # Create observer for the high calibration. Replace the low calibration.
-            #     self.MoistObserver = self.MoistCalibHighAdapt.CreateObserver(
-            #         SensorReportMoistCalibHigh.DATA_KEY_SENSOR_REPORT_SAMPLES,
-            #         self.SamplesPerMessage)
-            # self.MsgEx.SvcActivate()
